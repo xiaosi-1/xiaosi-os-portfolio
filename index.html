@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#245edb">
+  <title>XIAOSI-OS · 熊舒辉崎</title>
+  <meta name="description" content="熊舒辉崎（小四）的可交互个人作品集：市场洞察、品牌策划、直播运营与团队实践。">
+  <meta property="og:title" content="XIAOSI-OS · 熊舒辉崎">
+  <meta property="og:description" content="一台可以开机、探索和继续生长的个人作品集。">
+  <meta property="og:image" content="assets/wallpaper-xiaosi.png">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="seo-copy">
+    <h1>熊舒辉崎（小四）· 市场营销、品牌策划与直播运营</h1>
+    <p>代表项目包括中国挂面村品牌策划、红旗 HS3 年轻化营销和三九胃泰整合传播概念。</p>
+  </div>
+
+  <section id="boot" class="boot" aria-label="系统启动中">
+    <div class="boot-cluster">
+      <span class="boot-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <div class="boot-owner" data-bind="ownerName">熊舒辉崎</div>
+      <div class="boot-name"><span data-bind="systemName">XIAOSI-OS</span><sup>os</sup></div>
+      <div class="boot-pro">Professional</div>
+      <div class="boot-loader" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+    <p class="boot-hint">点击任意位置跳过开机</p>
+    <p class="boot-copy">Copyright © 2026 <span data-bind="ownerName">熊舒辉崎</span></p>
+    <b class="boot-corner" data-bind="nickname">小四</b>
+  </section>
+
+  <main id="desktop" class="desktop" hidden>
+    <ul id="desktop-icons" class="desktop-icons" aria-label="桌面图标"></ul>
+    <button id="portrait-spot" class="portrait-spot" type="button" aria-label="点击壁纸人物"></button>
+    <div id="window-layer" class="window-layer"></div>
+
+    <button id="edit-entry" class="edit-entry" type="button" hidden>✎ 编辑内容</button>
+
+    <footer class="taskbar">
+      <button id="start-button" class="start-button" type="button" aria-expanded="false">
+        <span class="start-mark" aria-hidden="true"></span><em>start</em>
+      </button>
+      <div id="task-items" class="task-items"></div>
+      <div class="tray"><span class="lang">中</span><time id="clock">00:00</time></div>
+    </footer>
+
+    <aside id="start-menu" class="start-menu" hidden>
+      <header><img data-asset="profile" src="assets/profile-xiaosi.jpg" alt=""><strong><span data-bind="ownerName">熊舒辉崎</span><small data-bind="nickname">小四</small></strong></header>
+      <ul id="start-list"></ul>
+      <footer>// built for <span data-bind="nickname">小四</span></footer>
+    </aside>
+
+    <aside id="welcome" class="welcome" hidden>
+      <button type="button" aria-label="关闭">×</button>
+      <strong>欢迎来到 <span data-bind="systemName">XIAOSI-OS</span></strong>
+      <p>双击 README.txt，领取一份探索任务。</p>
+    </aside>
+  </main>
+
+  <aside id="editor" class="editor" hidden aria-label="内容编辑器">
+    <header><strong>内容入口</strong><button id="editor-close" type="button">×</button></header>
+    <form id="editor-form">
+      <label>系统名<input name="systemName" maxlength="32"></label>
+      <label>姓名<input name="ownerName" maxlength="32"></label>
+      <label>昵称<input name="nickname" maxlength="24"></label>
+      <label>一句话介绍<input name="tagline" maxlength="80"></label>
+      <label>个人简介<textarea name="intro" rows="5"></textarea></label>
+      <label>联系方式<textarea name="contact" rows="4"></textarea></label>
+      <fieldset>
+        <legend>替换图片</legend>
+        <label class="file">桌面壁纸<input id="wallpaper-upload" type="file" accept="image/*"></label>
+        <label class="file">头像照片<input id="profile-upload" type="file" accept="image/*"></label>
+        <small>项目窗口里的虚线图片区也可直接点击上传。本机预览会自动保存。</small>
+      </fieldset>
+      <div class="editor-actions">
+        <button type="submit">保存文字</button>
+        <button id="export-content" type="button">导出内容 JSON</button>
+      </div>
+    </form>
+  </aside>
+
+  <div id="toast" class="toast" hidden></div>
+  <div class="crt" aria-hidden="true"><span></span></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
