@@ -1,0 +1,121 @@
+/* Standalone toys inside the existing XP window system. */
+.xp-window[data-key="town"], .xp-window[data-key="gacha"] { height: min(590px, calc(100dvh - var(--taskbar-h) - 24px)); }
+.arcade-host { position: relative; height: 100%; min-height: 0; overflow: hidden; color: #36362e; }
+.arcade-host button, .arcade-host a { cursor: pointer; }
+.arcade-host button:disabled { cursor: default; opacity: .55; }
+.arcade-host button:focus-visible, .arcade-host a:focus-visible, .arcade-host canvas:focus-visible { outline: 3px solid #d19837; outline-offset: -3px; }
+.arcade-kicker { margin: 0; font: 10px monospace; letter-spacing: .1em; }
+.arcade-muted { font-size: 12px; line-height: 1.7; color: #786e5c; }
+.gacha-host { background: #f3efdf; }
+.gacha-layout { display: grid; grid-template-columns: 1fr 1.05fr; height: 100%; overflow: auto; background-image: radial-gradient(#9d8f661c .8px, transparent .8px); background-size: 5px 5px; }
+.gacha-machine-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 22px 14px; background: #e6dfc84d; border-right: 1px solid #d9d0b7; }
+.gacha-machine-wrap > .arcade-kicker { margin-bottom: 18px; color: #8b7960; font-size: 9px; }
+.gacha-machine { width: 248px; filter: drop-shadow(8px 12px 0 #65523714); }
+.gacha-sign { position: relative; z-index: 2; padding: 14px 5px 10px; border: 5px solid #a64539; border-radius: 19px 19px 2px 2px; background: #f8e9b6; text-align: center; font-size: 21px; font-weight: 800; letter-spacing: .06em; color: #983d31; box-shadow: inset 0 -3px #e4cf94; }
+.gacha-sign span { display: block; margin-top: 5px; color: #866a46; font: 7px monospace; letter-spacing: .1em; }
+.gacha-glass { position: relative; height: 168px; margin: -2px 8px 0; overflow: hidden; background: linear-gradient(125deg, #ffffff90, #a6bbbb50 65%, #7e929950); border: 5px solid #9d9c86; border-top: 0; box-shadow: inset 4px 0 #fffc, inset -6px 0 #45626733; }
+.gacha-glass::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 12%, #ffffff60 12% 17%, transparent 17% 24%, #ffffff25 24% 31%, transparent 31%); }
+.gacha-glass i { position: absolute; left: var(--x); top: var(--y); width: 42px; height: 42px; border-radius: 50%; border: 1px solid #5d64575c; background: linear-gradient(var(--ball) 48%, #f7f0d9 49% 53%, #efe6ce 54%); transform: translate(-50%, -50%) rotate(var(--r)); box-shadow: inset 4px 4px #ffffff44, inset -4px -4px #49443822, 2px 3px 2px #37453e33; }
+.gacha-base { position: relative; padding: 12px 20px 10px; background: linear-gradient(90deg, #b94e41, #c85b4b 35%, #b34a3e); border: 5px solid #a44336; border-top-width: 7px; border-bottom-width: 10px; border-radius: 3px 3px 18px 18px; text-align: center; }
+.gacha-base > small { display: block; color: #f9dcb8; font-size: 10px; letter-spacing: .1em; }
+.gacha-draw { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 11px auto; padding: 0; color: #f8e9cb; background: transparent; }
+.gacha-draw b { font-size: 13px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: .14em; }
+.gacha-knob { position: relative; display: block; width: 66px; height: 66px; border: 6px solid #ded9c5; border-radius: 50%; background: linear-gradient(130deg, #989b93, #f3ecdc); box-shadow: 0 4px #843c36, inset 0 0 0 2px #7e837a; }
+.gacha-knob::after { content: ""; position: absolute; top: 21px; left: 1px; width: 50px; height: 13px; border: 2px solid #797c71; border-radius: 4px; background: #e8e2d2; box-shadow: 0 2px #676d6755; }
+.gacha-draw:hover .gacha-knob { transform: rotate(15deg); }
+.gacha-chute { position: relative; width: 92px; height: 35px; margin: 5px auto; border: 5px solid #d6755b; border-radius: 20px 20px 5px 5px; background: #55392f; box-shadow: inset 0 4px #352a29; overflow: hidden; }
+.gacha-chute i { display: block; width: 27px; height: 27px; margin: 3px auto; border-radius: 50%; background: linear-gradient(#e4b94c 50%, #eee0ba 50%); transform: translateY(-42px); }
+.gacha-serial { color: #f4d0ab; font: 8px monospace; letter-spacing: .06em; }
+.turning .gacha-knob { animation: capsule-turn .85s ease-in-out; }.turning .gacha-glass i { animation: capsule-shake .2s ease-in-out 4 alternate; }.dispensed .gacha-chute i { transform: translateY(0); transition: transform .3s ease-out; }.turning .gacha-chute i { transform: translateY(-42px); transition: none; }
+@keyframes capsule-turn { to { transform: rotate(360deg); } } @keyframes capsule-shake { to { margin-left: 7px; margin-top: -5px; } }
+.gacha-story { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 28px 30px; }
+.gacha-edition { color: #947349; font: 9px monospace; letter-spacing: .18em; border-bottom: 1px solid #bba37c; padding-bottom: 6px; }
+.gacha-story h1 { margin: 16px 0 7px; font-family: "Songti SC", "SimSun", serif; font-size: clamp(29px, 3.4vw, 43px); line-height: 1.22; font-weight: 600; letter-spacing: -.06em; }.gacha-story h1 span { color: #ba5141; }
+.gacha-story > p { margin: 8px 0 17px; color: #82745e; font-size: 12px; line-height: 1.8; }
+.gacha-result { align-self: stretch; position: relative; padding: 15px 17px; background: #fff9e9; border: 1px solid #d8cbae; box-shadow: 3px 3px #dbd2ba77; }
+.gacha-result::before { content: ""; position: absolute; right: -1px; top: -1px; border: 9px solid transparent; border-top-color: #e7deca; border-right-color: #e7deca; }
+.gacha-result small { color: #9a8263; font-size: 10px; }.gacha-result strong { display: block; margin: 8px 0; font-size: 16px; line-height: 1.5; }.gacha-result > span { display: block; color: #8b7a63; font-size: 11px; line-height: 1.6; }.gacha-result button { margin-top: 9px; padding: 7px 10px; background: #ab4a3b; color: #fff3d7; font-size: 12px; }
+.gacha-categories { margin: 20px 0 12px; font-size: 10px; color: #8c7f68; letter-spacing: .08em; }
+.gacha-actions { display: flex; gap: 8px; }.gacha-actions button { padding: 8px 12px; background: transparent; border: 1px solid #b8a17e; color: #66563f; font-size: 11px; }.gacha-actions b { margin-left: 8px; color: #ad4d3e; }
+.gacha-story > [data-stock] { margin-bottom: 0; font-size: 10px; }
+
+.town-host { display: flex; flex-direction: column; background: #ddd7c8; }
+.town-toolbar { flex-shrink: 0; display: flex; justify-content: space-between; gap: 8px; align-items: center; min-height: 42px; padding: 7px 14px; background: #f0ebdd; border-bottom: 2px solid #c3bbaa; }
+.town-toolbar > strong { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5f5043; }.town-toolbar i { width: 7px; height: 7px; background: #a34d42; box-shadow: 0 0 0 2px #d7cbb6; }.town-toolbar small { font: 9px monospace; color: #9b8870; }.town-toolbar > div { display: flex; gap: 4px; }.town-toolbar button { padding: 5px 9px; color: #6b5b45; background: #e3dccd; font-size: 11px; box-shadow: inset 1px 1px #fff6, inset -1px -1px #ae9f8880; }
+.console-deck { flex: 1; min-height: 0; display: grid; grid-template-columns: 103px minmax(0, 1fr) 77px; align-items: center; padding: 15px 8px; gap: 8px; background: repeating-linear-gradient(0deg, #c1b6a509 0 1px, transparent 1px 4px); }
+.console-left, .console-right { display: flex; flex-direction: column; align-items: center; gap: 9px; user-select: none; }.console-brand { margin-bottom: 20px; color: #986246; font: bold 15px monospace; letter-spacing: .04em; }.console-brand b { display: block; margin-top: 3px; font: 6px monospace; color: #8d8270; }.console-left > small, .console-right > small { color: #857967; font-size: 9px; }
+.dpad { display: grid; grid-template-columns: repeat(3, 29px); grid-template-rows: repeat(3, 29px); filter: drop-shadow(2px 3px 0 #7b746750); touch-action: none; }
+.dpad button, .dpad i { background: #4d4e4b; color: #b3b1a7; box-shadow: inset 1px 1px #6b6b63; padding: 0; font-size: 12px; }.dpad [data-dir="ArrowUp"] { grid-column: 2; }.dpad [data-dir="ArrowLeft"] { grid-row: 2; grid-column: 1; }.dpad i { grid-row: 2; grid-column: 2; }.dpad [data-dir="ArrowRight"] { grid-row: 2; grid-column: 3; }.dpad [data-dir="ArrowDown"] { grid-row: 3; grid-column: 2; }.dpad button:active { background: #303534; }
+.console-action { width: 43px; height: 43px; border-radius: 50%; color: #f1d5b2; font: bold 16px monospace; background: #b65346; border: 3px solid #984438; box-shadow: 1px 3px #793c31, 0 0 0 4px #c5bbab; touch-action: manipulation; }.action-b { background: #a44c43; margin-top: 12px; }.console-led { width: 5px; height: 5px; margin-bottom: 13px; border-radius: 50%; background: #aa4d40; box-shadow: 0 0 0 3px #d4cab9; }
+.town-screen { position: relative; align-self: center; width: 100%; aspect-ratio: 5 / 3; max-height: 100%; min-height: 0; overflow: hidden; background: #293f39; border: 8px solid #4b4f48; border-radius: 6px; box-shadow: 0 2px #eee9db, inset 0 0 0 2px #303f37; }
+.town-screen canvas { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; touch-action: none; }
+.town-hud { position: absolute; left: 11px; right: 11px; top: 9px; display: flex; justify-content: space-between; pointer-events: none; color: #f3dfaf; font: bold 11px monospace; text-shadow: 1px 1px #384535; }.town-hud span { padding: 4px 6px; background: #304c3ab8; border: 1px solid #779167; }.town-hud [data-hp] { color: #f2b39a; letter-spacing: .2em; }
+.town-pause { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #f6e6b8; background: #263e35a6; cursor: pointer; }.town-pause strong { font: bold 23px monospace; letter-spacing: .15em; }.town-pause span { font-size: 11px; }
+.town-footer { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; min-height: 33px; padding: 7px 14px; gap: 10px; border-top: 1px solid #bdb29d; background: #e9e1d1; }.town-footer span { font-size: 11px; color: #766448; }.town-footer b { flex-shrink: 0; font: 8px monospace; letter-spacing: .08em; color: #9b8b70; }
+
+.arcade-sheet { position: absolute; z-index: 5; inset: 0; display: flex; flex-direction: column; background: #f3eedf; text-align: left; }.arcade-sheet > header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 10px; padding: 9px 17px; background: #dfd3bb; border-bottom: 1px solid #bcae94; }.arcade-sheet > header strong { font-size: 13px; }.arcade-sheet > header button { padding: 6px 10px; background: #f5eddc; border: 1px solid #bcae94; color: #6f5e46; font-size: 11px; }.arcade-sheet-body { overflow: auto; overscroll-behavior: contain; padding: 20px; flex: 1; min-height: 0; }.arcade-slot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }.arcade-slot { padding: 19px 15px; display: flex; flex-direction: column; gap: 12px; text-align: left; background: #fff9e9; border: 1px solid #cebea1; box-shadow: 2px 3px #d9ceb966; min-width: 0; }.arcade-slot > span { font-size: 10px; color: #a67c51; }.arcade-slot strong { font-size: 15px; overflow-wrap: anywhere; }.arcade-slot small { font-size: 10px; color: #91816a; }.arcade-slot:hover { background: #f8eacb; transform: translateY(-1px); }
+.arcade-card { max-width: 640px; margin: 0 auto; }.arcade-card h2 { margin: 13px 0; font-size: 25px; line-height: 1.4; overflow-wrap: anywhere; }.arcade-card-copy { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; font-size: 14px; }.arcade-card [data-card-media] { display: flex; flex-direction: column; gap: 8px; }.arcade-card img, .arcade-card video { max-width: 100%; max-height: 310px; object-fit: contain; background: #e0dacb; }.arcade-card a { color: #955443; font-size: 12px; }.arcade-card-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 20px 0 10px; }.arcade-card-actions button, .arcade-edit > button { background: #746752; color: #fff4db; padding: 9px 13px; font-size: 12px; }.arcade-edit { display: flex; flex-direction: column; gap: 12px; max-width: 600px; margin: 0 auto; }.arcade-edit label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #685a45; }.arcade-edit input, .arcade-edit textarea { width: 100%; padding: 8px; border: 1px solid #b9ac92; background: #fffaf0; color: #39372f; user-select: text; }.arcade-edit > button { align-self: start; }.arcade-edit small, .arcade-edit [role="status"] { font-size: 11px; color: #87735b; line-height: 1.7; margin: 0; }.town-help { max-width: 610px; margin: 0 auto; }.town-help h2 { font-size: 23px; }.town-help p { line-height: 1.9; font-size: 13px; }
+.room-scene { position: relative; height: 115px; overflow: hidden; border: 5px solid #736751; background: repeating-linear-gradient(90deg, #d4a475 0 34px, #bd8f67 34px 36px); box-shadow: inset 0 70px #e7d8b2; image-rendering: pixelated; }.room-scene > b { position: absolute; left: 20px; top: 21px; padding: 8px 12px; font-size: 14px; color: #e9d6ac; background: #6d6450; border: 3px solid #938260; }.room-window { position: absolute; left: 45%; top: 13px; width: 54px; height: 48px; background: linear-gradient(90deg, transparent 46%, #e9d9b5 46% 54%, transparent 54%), linear-gradient(transparent 46%, #e9d9b5 46% 54%, transparent 54%), #87acb3; border: 5px solid #aa936d; }.room-rug { position: absolute; width: 150px; height: 25px; bottom: 4px; left: 27%; background: #a86450; border: 4px solid #cb926c; }.room-desk { position: absolute; width: 75px; height: 15px; right: 10%; top: 69px; background: #7f614b; box-shadow: 0 -8px #b0875f; }.room-desk::after { content: ""; position: absolute; inset: 15px 7px -14px; border-left: 7px solid #7f614b; border-right: 7px solid #7f614b; }.cinema { box-shadow: inset 0 70px #778887; }.cinema .room-window { width: 85px; left: 40%; background: #273e43; border: 4px solid #c4b691; }.library .room-window { background: repeating-linear-gradient(90deg, #9e6450 0 5px, #d5b381 5px 10px, #849a87 10px 14px); border-color: #907254; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .xp-window[data-key="town"], .xp-window[data-key="gacha"] { left: max(4px, env(safe-area-inset-left)) !important; top: 4px !important; width: calc(100vw - max(4px, env(safe-area-inset-left)) - max(4px, env(safe-area-inset-right))) !important; height: calc(100dvh - var(--taskbar-h) - 8px); max-height: none; }
+  .gacha-layout { grid-template-columns: .85fr 1.15fr; }.gacha-machine-wrap { padding: 5px; justify-content: center; }.gacha-machine-wrap > .arcade-kicker { display: none; }.gacha-machine { width: 175px; }.gacha-sign { padding: 6px 3px; border-width: 3px; font-size: 15px; border-radius: 12px 12px 0 0; }.gacha-sign span { font-size: 5px; margin-top: 2px; }.gacha-glass { height: 85px; border-width: 3px; margin-inline: 6px; }.gacha-glass i { width: 28px; height: 28px; }.gacha-base { padding: 5px 10px; border-width: 3px; border-bottom-width: 5px; }.gacha-base > small { font-size: 8px; }.gacha-draw { margin: 7px auto; }.gacha-knob { width: 43px; height: 43px; border-width: 4px; }.gacha-knob::after { width: 33px; height: 10px; top: 13px; left: 0; }.gacha-draw b { font-size: 10px; }.gacha-chute { height: 23px; width: 65px; border-width: 3px; margin: 2px auto; }.gacha-chute i { width: 21px; height: 21px; }.gacha-serial { font-size: 6px; }.gacha-story { padding: 10px 22px 10px 16px; }.gacha-edition { font-size: 7px; padding-bottom: 3px; }.gacha-story h1 { font-size: 25px; margin: 7px 0 5px; }.gacha-story h1 br { display: none; }.gacha-story > p:not([data-stock]) { display: none; }.gacha-result { padding: 9px 12px; }.gacha-result strong { font-size: 13px; margin: 3px 0; }.gacha-result > span { font-size: 10px; }.gacha-categories { margin: 9px 0 7px; font-size: 9px; }.gacha-actions button { padding: 6px 10px; }.gacha-story > [data-stock] { line-height: 1.4; font-size: 9px; margin-top: 7px; }
+  .town-toolbar { min-height: 29px; padding: 3px 10px; }.town-toolbar small { display: none; }.town-toolbar button { padding: 4px 8px; font-size: 10px; }.town-toolbar > strong { font-size: 11px; }.console-deck { grid-template-columns: 88px minmax(0, 1fr) 61px; padding: 5px 6px; gap: 5px; }.console-brand { font-size: 12px; margin-bottom: 7px; }.console-brand b { font-size: 5px; }.console-left, .console-right { gap: 6px; }.dpad { grid-template-columns: repeat(3, 28px); grid-template-rows: repeat(3, 28px); }.console-action { width: 40px; height: 40px; }.console-left > small, .console-right > small { font-size: 8px; }.console-led { margin-bottom: 5px; }.action-b { margin-top: 8px; }.town-screen { border-width: 5px; }.town-footer { min-height: 23px; padding: 4px 10px; }.town-footer span { font-size: 10px; }.town-footer b { display: none; }.town-hud { top: 5px; left: 6px; right: 6px; font-size: 9px; }.town-hud span { padding: 2px 4px; }
+  .arcade-sheet-body { padding: 12px 18px; }.arcade-sheet > header { padding: 5px 12px; }.arcade-slot { padding: 12px; gap: 6px; }.arcade-slot-grid { gap: 8px; }.arcade-slot strong { font-size: 12px; }.arcade-card h2 { font-size: 21px; }.room-scene { height: 98px; }.arcade-card img, .arcade-card video { max-height: 180px; }
+}
+.town-screen { justify-self: center; }
+.arcade-edit .arcade-remove { flex-direction: row; align-items: center; }.arcade-remove input { width: auto; }.town-help [data-replay] { padding: 9px 13px; color: #fff3da; background: #80634f; }
+@media (prefers-reduced-motion: reduce) { .turning .gacha-knob, .turning .gacha-glass i { animation: none; }.gacha-chute i { transition: none !important; } }
+
+/* A walkable little town: the world, rather than the console, fills the window. */
+.xp-window[data-key="town"] { height: min(660px, calc(100dvh - var(--taskbar-h) - 24px)); }
+.town-host { background: #45643a; }
+.desktop:has(.xp-window[data-key="town"].active:not(.minimized)) ~ .crt { opacity: .2; animation: none; }
+.town-toolbar { min-height: 38px; padding: 5px 12px; background: #ecd3a0; border-bottom: 3px solid #87603c; }
+.town-toolbar > strong { color: #694829; letter-spacing: .04em; }
+.town-toolbar i { background: #648047; box-shadow: 0 0 0 2px #b39b65; }
+.town-toolbar small { color: #88704d; font-size: 8px; }
+.town-toolbar button { background: #f7e6bf; color: #705032; border: 1px solid #b9915e; }
+.town-toolbar button[aria-pressed="true"] { background: #8c6b40; color: #fff0c9; }
+.town-host .console-deck { display: block; position: relative; padding: 0; background: #476b3f; }
+.town-host .town-screen { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; }
+.town-host .town-screen canvas { outline-offset: -3px; }
+.town-host .town-screen canvas { image-rendering: auto; }
+.town-host .town-toolbar { background: #f2e7cc; border-bottom: 1px solid #a19069; }
+.town-host .town-toolbar button { box-shadow: none; border-color: #c9b995; background: #faf2df; border-radius: 3px; }
+.town-host .town-footer { border-top: 1px solid #ac9870; background: #f2e7cc; }
+.town-host .console-left { position: absolute; z-index: 2; left: 18px; bottom: 16px; gap: 7px; opacity: .85; }
+.town-host .console-left > small { color: #fff0c5; text-shadow: 1px 1px #3e4a29; font: 9px monospace; }
+.town-host .dpad { grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 34px); filter: drop-shadow(2px 3px 0 #243b3066); }
+.town-host .dpad button, .town-host .dpad i { color: #fff0c7; background: #66533cdd; box-shadow: inset 2px 2px #c4a778, inset -2px -2px #443c2c; }
+.town-host .dpad button:active { background: #b58951; }
+.town-host .console-right { position: absolute; z-index: 2; right: 20px; bottom: 20px; flex-direction: row; gap: 16px; align-items: flex-end; }
+.console-right > div { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.console-right > div:first-child { margin-bottom: 23px; }
+.console-right > div > small { color: #fff0c5; font-size: 10px; text-shadow: 1px 1px #3e4a29; }
+.town-host .console-action { width: 49px; height: 49px; background: #ab6945e8; border: 3px solid #efc284; box-shadow: 2px 3px #4d482baa, inset 2px 2px #cf8f56; color: #fff4ce; }
+.town-host .action-b { margin: 0; background: #6f8750ee; box-shadow: 2px 3px #4d482baa, inset 2px 2px #9aac67; }
+.town-host .town-hud { top: 12px; left: 13px; right: 13px; align-items: start; font-size: 11px; }
+.town-host .town-hud span { background: #394937d9; color: #fff0c1; border: 1px solid #ddcfaa99; border-radius: 4px; padding: 6px 9px; box-shadow: 0 2px 7px #283b2826; }
+.town-host .town-hud [data-hp] { color: #ffb18b; }
+.town-host .town-hud [data-location] { letter-spacing: .04em; font-family: "PingFang SC", sans-serif; font-weight: 500; }
+.town-host .town-pause { z-index: 3; background: #253a2dcf; }
+@media (hover: hover) and (pointer: fine) and (min-height: 521px) {
+  .town-host .console-left, .town-host .console-right { opacity: .55; transition: opacity .18s ease; }
+  .town-host .console-left:hover, .town-host .console-right:hover, .town-host .console-left:focus-within, .town-host .console-right:focus-within { opacity: 1; }
+}
+.town-host:has(.town-pause:not([hidden])) .console-left, .town-host:has(.town-pause:not([hidden])) .console-right { visibility: hidden; }
+.town-discovery { position: absolute; z-index: 3; top: 62px; left: 50%; transform: translateX(-50%); max-width: 80%; padding: 11px 20px; border: 2px solid #dbb376; background: #f8eac8; box-shadow: 3px 4px #34503070; color: #6b4a30; font-size: 12px; text-align: center; pointer-events: none; }
+.town-footer { background: #eddbb0; border-top: 3px solid #9b7547; min-height: 34px; padding: 6px 12px; }
+.town-footer span { color: #705134; line-height: 1.4; }.town-footer b { font-size: 10px; color: #847047; }
+.town-journal { max-width: 760px; margin: 0 auto; }.town-journal h2 { font-family: "Songti SC", serif; font-size: 27px; margin: 12px 0; }.town-journal > p { font-size: 12px; line-height: 1.8; color: #8c785b; }
+.journal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 25px; }.journal-grid section { background: #fff8e6; border: 1px solid #d5c4a1; border-top: 3px solid #9eac7c; padding: 15px; }.journal-grid span { font-size: 10px; color: #7c8b53; }.journal-grid h3 { font-size: 15px; margin: 10px 0; }.journal-grid p { font-size: 11px; line-height: 1.7; color: #9b886a; margin: 0; }.journal-grid .journal-secret { border-top-color: #c39b70; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .xp-window[data-key="town"] { height: calc(100dvh - var(--taskbar-h) - 8px); }
+  .town-toolbar { min-height: 29px; padding: 3px 8px; }.town-toolbar button { font-size: 10px; padding: 3px 7px; }.town-toolbar small { display: none; }
+  .town-host .console-left { left: 10px; bottom: 8px; gap: 0; }.town-host .console-left > small { display: none; }
+  .town-host .dpad { grid-template-columns: repeat(3, 32px); grid-template-rows: repeat(3, 32px); }
+  .town-host .console-right { bottom: 10px; right: 13px; gap: 13px; }.console-right > div { gap: 3px; }.town-host .console-action { width: 45px; height: 45px; }
+  .town-host .town-hud { top: 7px; left: 8px; right: 8px; font-size: 9px; }.town-host .town-hud span { padding: 3px 6px; border-width: 1px; }
+  .town-footer { min-height: 24px; padding: 3px 9px; }.town-footer span { font-size: 10px; }.town-footer b { display: block; font-size: 9px; }
+  .town-discovery { top: 40px; padding: 8px 12px; font-size: 11px; }.journal-grid { gap: 8px; margin-top: 14px; }.journal-grid section { padding: 10px; }
+}

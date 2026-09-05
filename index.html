@@ -11,6 +11,8 @@
   <meta property="og:image" content="assets/wallpaper-xiaosi.png">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="arcade.css">
+  <link rel="preload" as="image" href="assets/wallpaper-xiaosi.png">
 </head>
 <body>
   <div class="seo-copy">
@@ -35,6 +37,7 @@
     <ul id="desktop-icons" class="desktop-icons" aria-label="桌面图标"></ul>
     <button id="portrait-spot" class="portrait-spot" type="button" aria-label="点击壁纸人物"></button>
     <div id="window-layer" class="window-layer"></div>
+    <button id="resume-close-all" class="resume-close-all" type="button" hidden>收起 About Me 窗口</button>
 
     <button id="edit-entry" class="edit-entry" type="button" hidden>✎ 编辑内容</button>
 
@@ -69,10 +72,20 @@
       <label>个人简介<textarea name="intro" rows="5"></textarea></label>
       <label>联系方式<textarea name="contact" rows="4"></textarea></label>
       <fieldset>
+        <legend>项目内容</legend>
+        <label>选择项目<select id="editor-project"></select></label>
+        <small>修改后请先保存文字，再切换项目。</small>
+        <label>桌面名称<input name="projectShortTitle" maxlength="24"></label>
+        <label>项目标题<input name="projectTitle" maxlength="80"></label>
+        <label>角色 / 时间 / 类型<input name="projectMeta" maxlength="120"></label>
+        <label>项目简介<textarea name="projectSummary" rows="4"></textarea></label>
+        <div id="editor-project-sections"></div>
+      </fieldset>
+      <fieldset>
         <legend>替换图片</legend>
         <label class="file">桌面壁纸<input id="wallpaper-upload" type="file" accept="image/*"></label>
         <label class="file">头像照片<input id="profile-upload" type="file" accept="image/*"></label>
-        <small>项目窗口里的虚线图片区也可直接点击上传。本机预览会自动保存。</small>
+        <small>打开项目图片可预览和替换。修改只保存在当前浏览器；正式发布请导出文字，并保留图片、视频原文件。</small>
       </fieldset>
       <div class="editor-actions">
         <button type="submit">保存文字</button>
@@ -81,7 +94,19 @@
     </form>
   </aside>
 
-  <div id="toast" class="toast" hidden></div>
+  <dialog id="image-viewer" class="image-viewer" aria-label="图片查看器">
+    <header><strong id="image-caption"></strong><button id="image-close" type="button" aria-label="关闭图片">×</button></header>
+    <div class="image-stage"><img id="image-full" alt=""></div>
+    <p id="image-notice" role="status"></p>
+    <footer><button id="image-prev" type="button" aria-label="上一张">←</button><span id="image-position" aria-live="polite"></span><button id="image-next" type="button" aria-label="下一张">→</button><button id="image-replace" type="button" hidden>替换此图</button></footer>
+  </dialog>
+  <aside class="rotate-screen" aria-label="请横屏浏览">
+    <div class="rotate-phone" aria-hidden="true">↻</div>
+    <p class="rotate-label">XIAOSI-OS · 横屏体验</p>
+    <h2>把手机横过来，<br>打开这台个人电脑。</h2>
+    <p>横屏可以完整浏览桌面、窗口和作品。<br>如果没有自动旋转，请关闭手机的方向锁定。</p>
+  </aside>
+  <div id="toast" class="toast" role="status" hidden></div>
   <div class="crt" aria-hidden="true"><span></span></div>
 
   <script type="module" src="app.js"></script>

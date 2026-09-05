@@ -1,4 +1,5 @@
 import { DEFAULT_CONTENT } from "./content.js";
+import { arcadeHTML, mountArcade } from "./arcade.js";
 
 const STORAGE_KEY = "xiaosi-os-content-v2";
 const DB_NAME = "xiaosi-os-assets";
@@ -12,8 +13,13 @@ let z = 100;
 let cascade = 0;
 const windows = new Map();
 const assetUrls = new Map();
+const arcadeCleanup = new Map();
 const editMode = new URLSearchParams(location.search).has("edit");
 let spill = null;
+let resumeTimers = [];
+let viewerSlots = [];
+let viewerIndex = 0;
+let viewerTrigger = null;
 const completed = new Set(JSON.parse(localStorage.getItem(QUEST_KEY) || "[]"));
 
 const QUESTS = [
@@ -36,7 +42,9 @@ const iconDefs = [
   ["folder:1", () => content.projects[1].shortTitle, "📁"],
   ["folder:2", () => content.projects[2].shortTitle, "📁"],
   ["contact", "联系我", "✉️"],
-  ["guestbook", "留言簿", "🖼️"]
+  ["guestbook", "留言簿", "🖼️"],
+  ["gacha", "小四扭蛋机", "🎰"],
+  ["town", "小四小镇", "🎮"]
 ];
 
 function loadContent() {
@@ -77,7 +85,7 @@ function renderDesktop() {
   });
 
   const list = $("#start-list");
-  list.innerHTML = iconDefs.slice(0, 9).map(([id, label, icon]) => {
+  list.innerHTML = iconDefs.map(([id, label, icon]) => {
     const text = typeof label === "function" ? label() : label;
     return `<li><button type="button" data-open="${id}">${glyph(icon)}<span>${esc(text)}</span></button></li>`;
   }).join("") + `<li class="separator"></li><li><button type="button" data-shutdown>${glyph("⏻")}<span>关机</span></button></li>`;
@@ -145,6 +153,7 @@ function toggleSpill(anchor, index) {
     const open = () => { closeSpill(); openWindow(button.dataset.target); };
     button.addEventListener("dblclick", open);
     if (matchMedia("(pointer: coarse)").matches) button.addEventListener("click", open);
+    button.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); open(); } });
   });
   hydrateAssets(host);
 }
@@ -157,6 +166,8 @@ function windowSpec(key) {
   if (key === "internet") return { title: `${content.nickname} Explorer`, icon: "🌐", width: 760, body: browserHTML() };
   if (key === "guestbook") return { title: "留言簿", icon: "🖼️", width: 600, body: guestbookHTML() };
   if (key === "mines") return { title: "Minesweeper", icon: "💣", width: 360, body: minesHTML() };
+  if (key === "gacha") return { title: "小四扭蛋机 · LITTLE COLLECTION", icon: "🎰", width: 790, body: arcadeHTML(key) };
+  if (key === "town") return { title: "小四小镇 · A LITTLE WORLD", icon: "🎮", width: 1040, body: arcadeHTML(key) };
   if (key.startsWith("project-note:")) {
     const [, index, section] = key.split(":");
     const project = content.projects[Number(index)];
@@ -194,14 +205,24 @@ function resumeSpec(key) {
 }
 
 function openResumeBomb() {
-  if (innerWidth < 720) { openWindow("about"); return; }
+  if (innerWidth < 720 || innerHeight < 520) { openWindow("about"); return; }
+  resumeTimers.forEach(clearTimeout);
+  $("#resume-close-all").hidden = false;
   const positions = [[36,8],[66,6],[5,12],[15,31],[38,48],[65,50],[61,13],[21,9]];
-  positions.forEach(([x, y], index) => setTimeout(() => {
+  resumeTimers = positions.map(([x, y], index) => setTimeout(() => {
     const el = openWindow(`resume:${index}`);
     if (!el) return;
-    el.style.left = `${Math.min(innerWidth - el.offsetWidth - 10, innerWidth * x / 100)}px`;
-    el.style.top = `${Math.min(innerHeight - el.offsetHeight - 44, innerHeight * y / 100)}px`;
+    $("#resume-close-all").hidden = false;
+    el.style.left = `${Math.max(4, Math.min(innerWidth - el.offsetWidth - 10, innerWidth * x / 100))}px`;
+    el.style.top = `${Math.max(4, Math.min(innerHeight - el.offsetHeight - 44, innerHeight * y / 100))}px`;
   }, index * 115));
+}
+
+function closeResumeBomb() {
+  resumeTimers.forEach(clearTimeout);
+  resumeTimers = [];
+  [...windows.keys()].filter((key) => key.startsWith("resume:")).forEach(closeWindow);
+  $("#resume-close-all").hidden = true;
 }
 
 function aboutHTML() {
@@ -276,7 +297,7 @@ function projectNoteHTML(project, sectionKey) {
 }
 
 function videoHTML(project, index) {
-  return `<div class="wmp"><div class="wmp-menu">File　View　Play　Tools　Help</div><div class="wmp-screen" data-video-screen="project-${index}-video"><span>▶</span><b>${esc(project.title)}</b><small>${editMode ? "点击选择本地视频" : "视频待补充"}</small></div><div class="wmp-controls"><button>▶</button><button>■</button><input type="range" value="0" disabled><span>0:00 / 0:00</span></div></div>`;
+  return `<div class="wmp"><div class="wmp-menu">Windows Media Player</div><div class="wmp-screen" data-video-screen="project-${index}-video"><span>▶</span><b>${esc(project.title)}</b><small>视频待补充</small></div><div class="wmp-controls"><span data-video-status>暂无视频</span>${editMode ? '<button class="video-upload" type="button">选择 / 替换视频</button>' : ''}</div></div>`;
 }
 
 function resumeProjectHTML(index) {
@@ -315,6 +336,7 @@ function openWindow(key) {
   wireWindow(el, key, spec);
   makeDraggable($(".titlebar", el), el);
   if (!spec.noTask) addTaskItem(key, spec);
+  $("#welcome").hidden = true;
   focusWindow(el);
   hydrateAssets(el);
   return el;
@@ -327,6 +349,15 @@ function wireWindow(el, key) {
   $(".titlebar", el).addEventListener("dblclick", (event) => { if (!event.target.closest("button")) maximizeWindow(key); });
   el.addEventListener("pointerdown", () => focusWindow(el));
   if (key === "mines") initMines(el);
+  if (key === "gacha" || key === "town") arcadeCleanup.set(key, mountArcade(el, key, {
+    editMode, getContent: () => content.arcade || {}, getAsset, saveAsset, deleteAsset, notify: showToast,
+    saveContent: (id, value) => {
+      const next = { ...content, arcade: { ...content.arcade, [id]: value } };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      content = next;
+      window.dispatchEvent(new Event("xiaosi-arcade-content"));
+    }
+  }));
   if (key.startsWith("project:") || key.startsWith("gallery:")) initProjectUploads(el);
   if (key.startsWith("video:")) initVideoUpload(el, key);
   if (key === "internet") initBrowser(el);
@@ -352,20 +383,31 @@ function initResumeCard(el) {
   $$('[data-swatch]', el).forEach((button) => button.addEventListener("click", () => $('.photo-lab', el).style.background = button.dataset.swatch));
 }
 
-function initVideoUpload(el, key) {
+async function initVideoUpload(el, key) {
   const screen = $('[data-video-screen]', el);
-  screen.addEventListener("click", () => {
-    if (!editMode) { showToast("在网址末尾加 ?edit=1 后即可上传视频"); return; }
+  const assetKey = screen.dataset.videoScreen;
+  const mount = (blob) => {
+    if (assetUrls.has(assetKey)) URL.revokeObjectURL(assetUrls.get(assetKey));
+    const url = URL.createObjectURL(blob);
+    assetUrls.set(assetKey, url);
+    screen.innerHTML = `<video src="${url}" controls playsinline preload="metadata"></video>`;
+    $('[data-video-status]', el).textContent = "视频已就绪";
+  };
+  $('.video-upload', el)?.addEventListener("click", () => {
     const input = document.createElement("input");
     input.type = "file"; input.accept = "video/*";
     input.addEventListener("change", async () => {
       const file = input.files[0]; if (!file) return;
-      await saveAsset(screen.dataset.videoScreen, file);
-      const url = URL.createObjectURL(file);
-      screen.innerHTML = `<video src="${url}" controls autoplay></video>`;
+      if (!file.type.startsWith("video/")) { showToast("请选择视频文件"); return; }
+      try {
+        await saveAsset(assetKey, file);
+        if (windows.get(key) === el) mount(file);
+        showToast("视频已保存在当前浏览器");
+      } catch { showToast("视频未保存，请检查浏览器存储空间或选择较小的文件"); }
     });
     input.click();
   });
+  try { const blob = await getAsset(assetKey); if (blob && windows.get(key) === el) mount(blob); } catch { /* Keep the upload entry available when storage is unavailable. */ }
 }
 
 function focusWindow(el) {
@@ -373,12 +415,20 @@ function focusWindow(el) {
   el.classList.add("active");
   el.style.zIndex = ++z;
   $$(".task-item").forEach((b) => b.classList.toggle("active", b.dataset.key === el.dataset.key));
+  if (el.dataset.key === "town" && !el.querySelector(".arcade-sheet") && !el.contains(document.activeElement)) el.querySelector("canvas")?.focus({ preventScroll: true });
 }
 
 function closeWindow(key) {
+  const el = windows.get(key);
+  arcadeCleanup.get(key)?.();
+  arcadeCleanup.delete(key);
+  if (el) $$('video', el).forEach((video) => video.pause());
   windows.get(key)?.remove();
   windows.delete(key);
   $(`.task-item[data-key="${CSS.escape(key)}"]`)?.remove();
+  if (![...windows.keys()].some((id) => id.startsWith("resume:"))) $("#resume-close-all").hidden = true;
+  const remaining = [...windows.values()].filter((el) => !el.classList.contains("minimized")).sort((a, b) => Number(a.style.zIndex) - Number(b.style.zIndex));
+  if (remaining.length) focusWindow(remaining.at(-1));
 }
 
 function minimizeWindow(key) {
@@ -459,19 +509,51 @@ function initMines(el) {
 
 function initProjectUploads(el) {
   $$('[data-upload-key]', el).forEach((slot) => slot.addEventListener("click", () => {
-    if (!editMode) { showToast("在网址末尾加 ?edit=1 后即可上传素材"); return; }
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.addEventListener("change", async () => {
-      const file = input.files[0];
-      if (!file) return;
-      await saveAsset(slot.dataset.uploadKey, file);
-      applyAsset(slot.dataset.uploadKey, file);
-      showToast("图片已保存在这台浏览器中");
-    });
-    input.click();
+    viewerTrigger = slot;
+    viewerSlots = $$('[data-upload-key]', el);
+    viewerIndex = viewerSlots.indexOf(slot);
+    renderImageViewer();
+    $("#image-viewer").showModal();
   }));
+}
+
+function renderImageViewer() {
+  const slot = viewerSlots[viewerIndex];
+  const key = slot.dataset.uploadKey;
+  const match = key.match(/^project-(\d+)-(.+)$/);
+  const src = assetUrls.get(key) || content.projects[Number(match[1])].assets?.[match[2]];
+  $("#image-full").hidden = !src;
+  if (src) $("#image-full").src = src;
+  else $("#image-full").removeAttribute("src");
+  const label = $('b', slot).textContent;
+  $("#image-full").alt = label;
+  $("#image-caption").textContent = src ? label : `${label} · 素材待补充`;
+  $("#image-position").textContent = `${viewerIndex + 1} / ${viewerSlots.length}`;
+  $("#image-notice").textContent = "";
+  $("#image-replace").hidden = !editMode;
+  $("#image-replace").textContent = src ? "替换此图" : "上传图片";
+}
+
+function stepImage(direction) {
+  viewerIndex = (viewerIndex + direction + viewerSlots.length) % viewerSlots.length;
+  renderImageViewer();
+}
+
+function replaceViewerImage() {
+  const key = viewerSlots[viewerIndex].dataset.uploadKey;
+  const input = document.createElement("input");
+  input.type = "file"; input.accept = "image/*";
+  input.addEventListener("change", async () => {
+    const file = input.files[0]; if (!file) return;
+    if (!file.type.startsWith("image/")) { showToast("请选择图片文件"); return; }
+    try {
+      await saveAsset(key, file);
+      applyAsset(key, file);
+      if ($("#image-viewer").open) renderImageViewer();
+      showToast("图片已保存在当前浏览器");
+    } catch { showToast("图片未保存，请检查浏览器存储空间"); }
+  });
+  input.click();
 }
 
 function toggleStart(force) {
@@ -487,14 +569,30 @@ function initEditor() {
   $("#edit-entry").hidden = false;
   $("#edit-entry").addEventListener("click", () => { $("#editor").hidden = false; fillEditor(); });
   $("#editor-close").addEventListener("click", () => { $("#editor").hidden = true; });
+  $("#editor-project").innerHTML = content.projects.map((project, index) => `<option value="${index}">${esc(project.shortTitle)}</option>`).join("");
+  $("#editor-project").addEventListener("change", fillProjectEditor);
   $("#editor-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const fd = new FormData(event.currentTarget);
-    ["systemName", "ownerName", "nickname", "tagline", "intro", "contact"].forEach((key) => { content[key] = String(fd.get(key) || "").trim(); });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+    const next = structuredClone(content);
+    ["systemName", "ownerName", "nickname", "tagline", "intro", "contact"].forEach((key) => { next[key] = String(fd.get(key) || "").trim(); });
+    const index = Number($("#editor-project").value);
+    const project = next.projects[index];
+    ["shortTitle", "title", "meta", "summary"].forEach((key) => { project[key] = String(fd.get(`project${key[0].toUpperCase()}${key.slice(1)}`) || "").trim(); });
+    Object.keys(project.sections).forEach((key) => {
+      project.sections[key].title = String(fd.get(`${key}Title`) || "").trim();
+      project.sections[key].lead = String(fd.get(`${key}Lead`) || "").trim();
+      project.sections[key].bullets = String(fd.get(`${key}Bullets`) || "").split("\n").map((line) => line.trim()).filter(Boolean);
+    });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { showToast("文字未保存，请检查浏览器存储权限"); return; }
+    content = next;
+    closeSpill();
+    closeResumeBomb();
+    [...windows.keys()].filter((key) => key === "about" || key === "readme" || key === "contact" || key === "internet" || key.startsWith("project:") || key.startsWith("project-note:") || key.startsWith("gallery:")).forEach(closeWindow);
     bindContent();
     renderDesktop();
-    showToast("文字已保存");
+    $("#editor-project").options[index].textContent = project.shortTitle;
+    showToast("文字已保存，可重新打开窗口预览");
   });
   $("#export-content").addEventListener("click", exportContent);
   $("#wallpaper-upload").addEventListener("change", (event) => uploadGlobal("wallpaper", event.target.files[0]));
@@ -504,13 +602,24 @@ function initEditor() {
 function fillEditor() {
   const form = $("#editor-form");
   ["systemName", "ownerName", "nickname", "tagline", "intro", "contact"].forEach((key) => { form.elements[key].value = content[key] || ""; });
+  fillProjectEditor();
+}
+
+function fillProjectEditor() {
+  const form = $("#editor-form");
+  const project = content.projects[Number($("#editor-project").value)];
+  ["shortTitle", "title", "meta", "summary"].forEach((key) => { form.elements[`project${key[0].toUpperCase()}${key.slice(1)}`].value = project[key] || ""; });
+  $("#editor-project-sections").innerHTML = Object.entries(project.sections).map(([key, section]) => `<details><summary>${esc(section.title)}</summary><label>小节标题<input name="${key}Title" value="${esc(section.title)}"></label><label>小节介绍<textarea name="${key}Lead" rows="3">${esc(section.lead)}</textarea></label><label>要点（每行一条）<textarea name="${key}Bullets" rows="4">${esc(section.bullets.join("\n"))}</textarea></label></details>`).join("");
 }
 
 async function uploadGlobal(key, file) {
   if (!file) return;
-  await saveAsset(key, file);
-  applyAsset(key, file);
-  showToast("图片已保存在这台浏览器中");
+  if (!file.type.startsWith("image/")) { showToast("请选择图片文件"); return; }
+  try {
+    await saveAsset(key, file);
+    applyAsset(key, file);
+    showToast("图片已保存在这台浏览器中");
+  } catch { showToast("图片未保存，请检查浏览器存储空间"); }
 }
 
 function exportContent() {
@@ -533,11 +642,12 @@ function openDB() {
 async function saveAsset(key, blob) {
   const db = await openDB();
   await new Promise((resolve, reject) => {
-    const req = db.transaction("assets", "readwrite").objectStore("assets").put(blob, key);
-    req.onsuccess = resolve;
-    req.onerror = () => reject(req.error);
-  });
-  db.close();
+    const tx = db.transaction("assets", "readwrite");
+    tx.objectStore("assets").put(blob, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  }).finally(() => db.close());
 }
 
 async function getAsset(key) {
@@ -549,6 +659,17 @@ async function getAsset(key) {
   });
   db.close();
   return value;
+}
+
+async function deleteAsset(key) {
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction("assets", "readwrite");
+    tx.objectStore("assets").delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  }).finally(() => db.close());
 }
 
 function applyAsset(key, blob) {
@@ -572,6 +693,7 @@ async function hydrateAssets(root = document) {
 }
 
 function showToast(message) {
+  if ($("#image-viewer").open) $("#image-notice").textContent = message;
   const toast = $("#toast");
   toast.textContent = message;
   toast.hidden = false;
@@ -592,13 +714,14 @@ function startClock() {
 }
 
 function enterDesktop() {
+  if ($("#boot").hidden || $("#boot").classList.contains("leaving")) return;
   $("#boot").classList.add("leaving");
   setTimeout(() => {
     $("#boot").hidden = true;
     $("#desktop").hidden = false;
     $("#desktop").classList.add("power-on");
     setTimeout(() => $("#desktop").classList.remove("power-on"), 700);
-    setTimeout(() => { $("#welcome").hidden = false; }, 1200);
+    setTimeout(() => { if (!windows.size) $("#welcome").hidden = false; }, 1200);
   }, 360);
 }
 
@@ -608,6 +731,23 @@ startClock();
 initEditor();
 hydrateAssets();
 
+const portraitMode = matchMedia("(orientation: portrait) and (max-width: 600px), (orientation: portrait) and (pointer: coarse) and (max-width: 900px)");
+function syncOrientation() {
+  if (portraitMode.matches && $("#image-viewer").open) $("#image-viewer").close();
+  $("#desktop").inert = portraitMode.matches;
+  $("#editor").inert = portraitMode.matches;
+}
+portraitMode.addEventListener("change", syncOrientation);
+syncOrientation();
+$("#resume-close-all").addEventListener("click", closeResumeBomb);
+$("#image-close").addEventListener("click", () => $("#image-viewer").close());
+$("#image-viewer").addEventListener("close", () => { if (viewerTrigger?.isConnected) viewerTrigger.focus(); });
+$("#image-prev").addEventListener("click", () => stepImage(-1));
+$("#image-next").addEventListener("click", () => stepImage(1));
+$("#image-replace").addEventListener("click", replaceViewerImage);
+$("#image-viewer").addEventListener("keydown", (event) => {
+  if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); stepImage(event.key === "ArrowLeft" ? -1 : 1); }
+});
 $("#start-button").addEventListener("click", (event) => { event.stopPropagation(); toggleStart(); });
 $("#welcome button").addEventListener("click", () => { $("#welcome").hidden = true; });
 $("#welcome").addEventListener("click", (event) => { if (!event.target.closest("button")) { openWindow("readme"); $("#welcome").hidden = true; } });
@@ -617,9 +757,12 @@ $("#portrait-spot").addEventListener("click", () => {
   questDone("portrait");
   showToast("小四离开桌面去补作品素材了。");
 });
-document.addEventListener("click", (event) => { if (!event.target.closest("#start-menu, #start-button")) toggleStart(false); });
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#start-menu, #start-button")) toggleStart(false);
+  if (!event.target.closest(".project-spill, .desktop-icon, #start-menu")) closeSpill();
+});
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { toggleStart(false); $("#editor").hidden = true; }
+  if (event.key === "Escape" && !$("#image-viewer").open) { toggleStart(false); closeSpill(); $("#editor").hidden = true; }
   if (!$("#boot").hidden) enterDesktop();
 });
 $("#boot").addEventListener("click", enterDesktop, { once: true });
